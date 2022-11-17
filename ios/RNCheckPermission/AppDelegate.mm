@@ -5,6 +5,7 @@
 #import <React/RCTRootView.h>
 
 #import <React/RCTAppSetupUtils.h>
+#import <CoreTelephony/CTCellularData.h>
 
 #if RCT_NEW_ARCH_ENABLED
 #import <React/CoreModulesPlugins.h>
@@ -57,6 +58,8 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
   rootViewController.view = rootView;
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
+  
+  [self checkNetworkPermisson];
   return YES;
 }
 
@@ -129,5 +132,42 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
 }
 
 #endif
+
+#pragma mark ============== 首次安装网络权限获取 =============
+/*
+ 获取网络权限状态
+ */
+- (void)checkNetworkPermisson{
+    //2.根据权限执行相应的交互
+    CTCellularData *cellularData = [[CTCellularData alloc] init];
+    /*
+     此函数会在网络权限改变时再次调用
+     */
+    cellularData.cellularDataRestrictionDidUpdateNotifier = ^(CTCellularDataRestrictedState state) {
+        switch (state) {
+            case kCTCellularDataRestricted:
+                  
+                NSLog(@"Restricted");
+                //2.1权限关闭的情况下 再次请求网络数据会弹出设置网络提示
+                //[self getAppInfo];
+                break;
+            case kCTCellularDataNotRestricted:
+                  
+                NSLog(@"NotRestricted");
+                //2.2已经开启网络权限 监听网络状态
+                //[self addReachabilityManager:application didFinishLaunchingWithOptions:launchOptions];
+                break;
+            case kCTCellularDataRestrictedStateUnknown:
+                  
+                NSLog(@"Unknown");
+                //2.3未知情况 （还没有遇到推测是有网络但是连接不正常的情况下）
+                //[self getAppInfo];
+                break;
+                  
+            default:
+                break;
+        }
+    };
+}
 
 @end
